@@ -103,3 +103,41 @@ describe('GET /todos/:id', () => {
      .end(done);
   })
 })
+
+
+describe('DELETE /todos/:id', () => {
+  it('should DELETE todos by id and return it', done => {
+    const id = dummuTodos[0]._id.toHexString();
+    request(app)
+     .delete('/todos/' + id)
+     .expect(200)
+     .expect( res => {
+       expect(res.body.todo.text).toBe(dummuTodos[0].text);
+     })
+     .end((err, res) => {
+       if(err) {
+         return done(err);
+       }
+       Todo.findById(id).then((todos) => {
+         expect(todos).toBeFalsy();
+         done();
+       }).catch(e => done(e))
+     })
+  })
+
+  it('should return 400 id id not found ', done => {
+    const id = new ObjectID().toHexString();
+    request(app)
+     .delete('/todos/' + id)
+     .expect(400)
+     .end(done);
+  })
+
+  it('should return 400 if bad id ', done => {
+    const id = '123';
+    request(app)
+     .delete('/todos/' + id)
+     .expect(400)
+     .end(done);
+  })
+})
