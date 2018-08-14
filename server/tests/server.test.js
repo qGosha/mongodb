@@ -10,7 +10,9 @@ const dummuTodos = [{
 },
 {
   _id: new ObjectID(),
-  text: 'SEcond text todos'
+  text: 'SEcond text todos',
+  completed: true,
+  comletedAt:'333'
 }];
 
 
@@ -140,4 +142,52 @@ describe('DELETE /todos/:id', () => {
      .expect(400)
      .end(done);
   })
+});
+
+describe('patch /todos/:id', () => {
+  it('should patch todos by id and return it', done => {
+    const id = dummuTodos[0]._id.toHexString();
+    const text = 'Test todo 1';
+
+    request(app)
+     .patch('/todos/' + id)
+     .send({
+       completed: true,
+       text})
+     .expect(200)
+     .expect( res => {
+       expect(res.body.todo.text).toBe(text);
+       expect(res.body.todo.completedAt).toBeTruthy();
+     })
+     .end((err, res) => {
+       if(err) {
+         return done(err);
+       }
+       Todo.findById(id).then((todo) => {
+         expect(todo.text).toBe(text);
+         done();
+       }).catch(e => done(e))
+     })
+  })
+
+  it('should clear completedAt when todo is not complete ', done => {
+    const id = dummuTodos[1]._id.toHexString();
+    request(app)
+     .patch('/todos/' + id)
+     .send({
+       completed: false
+     })
+     .expect(200)
+     .end((err, res) => {
+       if(err) {
+         return done(err);
+       }
+       Todo.findById(id).then((todo) => {
+         expect(todo.completed).toBeFalsy();
+         expect(todo.completedAt).toBeFalsy();
+         done();
+       }).catch(e => done(e))
+     })
+  })
+
 })
